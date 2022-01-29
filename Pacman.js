@@ -1,4 +1,4 @@
-import { OBJECT_TYPE, DIRECTONS } from "./setup";
+import { OBJECT_TYPE, DIRECTIONS } from "./setup";
 
 class Pacman {
   constructor(speed, startPos) {
@@ -11,7 +11,8 @@ class Pacman {
   }
 
   shouldMove() {
-    if (!this.dir) return false;
+    // Don't move before a key is pressed
+    if (!this.dir) return;
 
     if (this.timer === this.speed) {
       this.timer = 0;
@@ -22,7 +23,7 @@ class Pacman {
 
   getNextMove(objectExist) {
     let nextMovePos = this.pos + this.dir.movement;
-
+    // Do we collide with a wall?
     if (
       objectExist(nextMovePos, OBJECT_TYPE.WALL) ||
       objectExist(nextMovePos, OBJECT_TYPE.GHOSTLAIR)
@@ -44,7 +45,7 @@ class Pacman {
     this.pos = nextMovePos;
   }
 
-  handleKeyInput(e, objectExist) {
+  handleKeyInput = (e, objectExist) => {
     let dir;
 
     if (e.keyCode >= 37 && e.keyCode <= 40) {
@@ -56,7 +57,7 @@ class Pacman {
     const nextMovePos = this.pos + dir.movement;
     if (objectExist(nextMovePos, OBJECT_TYPE.WALL)) return;
     this.dir = dir;
-  }
+  };
 }
 
 export default Pacman;

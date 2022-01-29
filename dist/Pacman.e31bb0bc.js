@@ -327,14 +327,38 @@ var GameBoard = /*#__PURE__*/function () {
       (_this$grid$pos$classL2 = this.grid[pos].classList).remove.apply(_this$grid$pos$classL2, (0, _toConsumableArray2.default)(classes));
     }
   }, {
-    key: "objectExists",
-    value: function objectExists(pos, object) {
+    key: "objectExist",
+    value: function objectExist(pos, object) {
       return this.grid[pos].classList.contains(object);
     }
   }, {
     key: "rotateDiv",
     value: function rotateDiv(pos, deg) {
       this.grid[pos].style.transform = "rotate(".concat(deg, "deg)");
+    }
+  }, {
+    key: "moveCharacter",
+    value: function moveCharacter(character) {
+      if (character.shouldMove()) {
+        var _character$getNextMov = character.getNextMove(this.objectExist.bind(this)),
+            nextMovePos = _character$getNextMov.nextMovePos,
+            direction = _character$getNextMov.direction;
+
+        var _character$makeMove = character.makeMove(),
+            classesToRemove = _character$makeMove.classesToRemove,
+            classesToAdd = _character$makeMove.classesToAdd;
+
+        if (character.rotation && nextMovePos !== character.pos) {
+          // Rotate
+          this.rotateDiv(nextMovePos, character.dir.rotation); // Rotate the previous div back
+
+          this.rotateDiv(character.pos, 0);
+        }
+
+        this.removeObject(character.pos, classesToRemove);
+        this.addObject(nextMovePos, classesToAdd);
+        character.setNewPos(nextMovePos, direction);
+      }
     }
   }], [{
     key: "createGameBoard",
@@ -349,7 +373,24 @@ var GameBoard = /*#__PURE__*/function () {
 
 var _default = GameBoard;
 exports.default = _default;
-},{"@babel/runtime/helpers/toConsumableArray":"node_modules/@babel/runtime/helpers/toConsumableArray.js","@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js"}],"Pacman.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/toConsumableArray":"node_modules/@babel/runtime/helpers/toConsumableArray.js","@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js"}],"node_modules/@babel/runtime/helpers/defineProperty.js":[function(require,module,exports) {
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+module.exports = _defineProperty;
+},{}],"Pacman.js":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -361,13 +402,30 @@ var _classCallCheck2 = _interopRequireDefault(require("@babel/runtime/helpers/cl
 
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 
+var _defineProperty2 = _interopRequireDefault(require("@babel/runtime/helpers/defineProperty"));
+
 var _setup = require("./setup");
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var Pacman = /*#__PURE__*/function () {
   function Pacman(speed, startPos) {
+    var _this = this;
+
     (0, _classCallCheck2.default)(this, Pacman);
+    (0, _defineProperty2.default)(this, "handleKeyInput", function (e, objectExist) {
+      var dir;
+
+      if (e.keyCode >= 37 && e.keyCode <= 40) {
+        dir = _setup.DIRECTIONS[e.key];
+      } else {
+        return;
+      }
+
+      var nextMovePos = _this.pos + dir.movement;
+      if (objectExist(nextMovePos, _setup.OBJECT_TYPE.WALL)) return;
+      _this.dir = dir;
+    });
     this.pos = startPos;
     this.speed = speed;
     this.dir = null;
@@ -379,7 +437,8 @@ var Pacman = /*#__PURE__*/function () {
   (0, _createClass2.default)(Pacman, [{
     key: "shouldMove",
     value: function shouldMove() {
-      if (!this.dir) return false;
+      // Don't move before a key is pressed
+      if (!this.dir) return;
 
       if (this.timer === this.speed) {
         this.timer = 0;
@@ -391,7 +450,7 @@ var Pacman = /*#__PURE__*/function () {
   }, {
     key: "getNextMove",
     value: function getNextMove(objectExist) {
-      var nextMovePos = this.pos + this.dir.movement;
+      var nextMovePos = this.pos + this.dir.movement; // Do we collide with a wall?
 
       if (objectExist(nextMovePos, _setup.OBJECT_TYPE.WALL) || objectExist(nextMovePos, _setup.OBJECT_TYPE.GHOSTLAIR)) {
         nextMovePos = this.pos;
@@ -417,28 +476,13 @@ var Pacman = /*#__PURE__*/function () {
     value: function setNewPos(nextMovePos) {
       this.pos = nextMovePos;
     }
-  }, {
-    key: "handleKeyInput",
-    value: function handleKeyInput(e, objectExist) {
-      var dir;
-
-      if (e.keyCode >= 37 && e.keyCode <= 40) {
-        dir = DIRECTIONS[e.key];
-      } else {
-        return;
-      }
-
-      var nextMovePos = this.pos + dir.movement;
-      if (objectExist(nextMovePos, _setup.OBJECT_TYPE.WALL)) return;
-      this.dir = dir;
-    }
   }]);
   return Pacman;
 }();
 
 var _default = Pacman;
 exports.default = _default;
-},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","./setup":"setup.js"}],"index.js":[function(require,module,exports) {
+},{"@babel/runtime/helpers/classCallCheck":"node_modules/@babel/runtime/helpers/classCallCheck.js","@babel/runtime/helpers/createClass":"node_modules/@babel/runtime/helpers/createClass.js","@babel/runtime/helpers/defineProperty":"node_modules/@babel/runtime/helpers/defineProperty.js","./setup":"setup.js"}],"index.js":[function(require,module,exports) {
 "use strict";
 
 var _setup = require("./setup");
@@ -471,7 +515,10 @@ function gameOver(pacman, grid) {}
 
 function checkCollision(pacman, ghosts) {}
 
-function gameLoop(pacman, ghosts) {}
+function gameLoop(pacman, ghosts) {
+  // 1. Move Pacman
+  gameBoard.moveCharacter(pacman);
+}
 
 function startGame() {
   gameWin = false;
@@ -482,8 +529,11 @@ function startGame() {
   var pacman = new _Pacman.default(2, 287);
   gameBoard.addObject(287, [_setup.OBJECT_TYPE.PACMAN]);
   document.addEventListener("keydown", function (e) {
-    return pacman.handleKeyInput(e, gameBoard.objectExist);
+    return pacman.handleKeyInput(e, gameBoard.objectExist.bind(gameBoard));
   });
+  timer = setInterval(function () {
+    return gameLoop(pacman);
+  }, GLOBAL_SPEED);
 }
 
 startButton.addEventListener("click", startGame);
