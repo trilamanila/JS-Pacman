@@ -2,6 +2,8 @@ import { DIRECTIONS, OBJECT_TYPE } from "./setup";
 
 //Primitive random movement
 export function randomMovement(position, direction, objectExist) {
+  let dir = direction;
+  let nextMovePos = position + dir.movement;
   //Create an array from the directiosn object keys
   const keys = Object.keys(DIRECTIONS);
 
@@ -16,4 +18,5 @@ export function randomMovement(position, direction, objectExist) {
     //Set the next move
     nextMovePos = position + dir.movement;
   }
+  return { nextMovePos, direction: dir };
 }
