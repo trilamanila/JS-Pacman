@@ -627,7 +627,14 @@ var gameWin = false;
 var powerPillActive = false;
 var powerPillTimer = null;
 
-function gameOver(pacman, grid) {}
+function gameOver(pacman, grid) {
+  document.removeEventListener("keydown", function (e) {
+    return pacman.handleKeyInput(e, gameBoard.objectExist.bind(gameBoard));
+  });
+  gameBoard.showGameStatus(gameWin);
+  clearInterval(timer);
+  startButton.classList.remove("hide");
+}
 
 function checkCollision(pacman, ghosts) {
   var collidedGhost = ghosts.find(function (ghost) {
@@ -654,7 +661,41 @@ function gameLoop(pacman, ghosts) {
   ghosts.forEach(function (ghost) {
     return gameBoard.moveCharacter(ghost);
   });
-  checkCollision(pacman, ghosts);
+  checkCollision(pacman, ghosts); //Check if Pacman eats a dot
+
+  if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.DOT)) {
+    gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.DOT]);
+    gameBoard.dotCount--;
+    score += 10;
+  } //Check if Pacman eats a powerpill
+
+
+  if (gameBoard.objectExist(pacman.pos, _setup.OBJECT_TYPE.PILL)) {
+    gameBoard.removeObject(pacman.pos, [_setup.OBJECT_TYPE.PILL]);
+    pacman.powerPill = true;
+    score += 50;
+    clearTimeout(powerPillTimer);
+    powerPillTimer = setTimeout(function () {
+      return pacman.powerPill = false;
+    }, POWER_PILL_TIME);
+  } //Change ghost scare mode depening on Powerpill
+
+
+  if (pacman.powerPill !== powerPillActive) {
+    powerPillActive = pacman.powerPill;
+    ghosts.forEach(function (ghost) {
+      return ghost.isScared = pacman.powerPill;
+    });
+  } //Check if all dots have been eaten
+
+
+  if (gameBoard.dotCount === 0) {
+    gameWin = true;
+    gameOver(pacman, ghosts);
+  } //Show the score
+
+
+  scoreTable.innerHTML = score;
 }
 
 function startGame() {
@@ -703,7 +744,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "56624" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "53606" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

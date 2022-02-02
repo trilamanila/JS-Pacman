@@ -23,15 +23,15 @@ let powerPillActive = false;
 let powerPillTimer = null;
 
 function gameOver(pacman, grid) {
-    document.removeEventListener('keydown', e =>
-    pacman.handleKeyInput(e, gameBoard.objectExist);
-    )
+  document.removeEventListener("keydown", e =>
+    pacman.handleKeyInput(e, gameBoard.objectExist.bind(gameBoard))
+  );
 
-    gameBoard.showGameStatus(gameWin);
+  gameBoard.showGameStatus(gameWin);
 
-    clearInterval(timer);
+  clearInterval(timer);
 
-    startButton.classList.remove('hide');
+  startButton.classList.remove("hide");
 }
 
 function checkCollision(pacman, ghosts) {
@@ -61,6 +61,42 @@ function gameLoop(pacman, ghosts) {
 
   ghosts.forEach(ghost => gameBoard.moveCharacter(ghost));
   checkCollision(pacman, ghosts);
+
+  //Check if Pacman eats a dot
+  if (gameBoard.objectExist(pacman.pos, OBJECT_TYPE.DOT)) {
+    gameBoard.removeObject(pacman.pos, [OBJECT_TYPE.DOT]);
+    gameBoard.dotCount--;
+    score += 10;
+  }
+
+  //Check if Pacman eats a powerpill
+  if (gameBoard.objectExist(pacman.pos, OBJECT_TYPE.PILL)) {
+    gameBoard.removeObject(pacman.pos, [OBJECT_TYPE.PILL]);
+
+    pacman.powerPill = true;
+    score += 50;
+
+    clearTimeout(powerPillTimer);
+    powerPillTimer = setTimeout(
+      () => (pacman.powerPill = false),
+      POWER_PILL_TIME
+    );
+  }
+
+  //Change ghost scare mode depening on Powerpill
+  if (pacman.powerPill !== powerPillActive) {
+    powerPillActive = pacman.powerPill;
+    ghosts.forEach(ghost => (ghost.isScared = pacman.powerPill));
+  }
+
+  //Check if all dots have been eaten
+  if (gameBoard.dotCount === 0) {
+    gameWin = true;
+    gameOver(pacman, ghosts);
+  }
+
+  //Show the score
+  scoreTable.innerHTML = score;
 }
 
 function startGame() {
