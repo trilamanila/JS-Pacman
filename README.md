@@ -1,8 +1,6 @@
 # Pacman Clone
 
-![Project Image](/demo.pngdemo.png)
-
-> Robinhood clone live demo here (https://robinhood-a490a.web.app/)
+![Project Image](/demo.png)
 
 ---
 
